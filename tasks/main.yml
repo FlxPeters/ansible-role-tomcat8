@@ -1,0 +1,79 @@
+---
+
+- name: Ensure tomcat_java_home is defined
+  fail: msg="You must define the tomcat_java_home variable"
+  when: tomcat_java_home is not defined
+
+- name: Create tomcat group
+  group:
+    name: tomcat
+    system: true
+
+- name: Create tomcat user
+  user:
+    name: tomcat
+    group: tomcat
+    shell: /bin/false
+    home: "{{tomcat_home_path}}"
+    system: true
+    createhome: true
+    move_home: true
+
+- name: Download and extract Tomcat to tomcat home directory
+  unarchive:
+    src: "{{tomcat_archive_url}}/{{tomcat_archive_name}}{{tomcat_archive_name_ext}}"
+    dest: "{{tomcat_home_path}}"
+    remote_src: true
+    group: tomcat
+    creates: "{{tomcat_archive_install_path}}"
+
+- name: Make the tomcat user the owner of the webapps, work, temp, and logs directories
+  file:
+    path: "{{tomcat_archive_install_path}}/{{item}}"
+    owner: tomcat
+    group: tomcat
+    recurse: true
+  with_items:
+    - webapps
+    - work
+    - temp
+    - logs
+
+- name: Grant Tomcat group read access to the conf directory
+  file:
+    path: "{{tomcat_archive_install_path}}/conf"
+    state: directory
+    mode: "g+r"
+    recurse: true
+
+- name: Grant Tomcat group execute access to the conf directory itself
+  file:
+    path: "{{tomcat_archive_install_path}}/conf"
+    state: directory
+    mode: "g+x"
+
+- name: Create tomcat-users.xml
+  template:
+    src: templates/tomcat-users.xml
+    dest: "{{tomcat_archive_install_path}}/conf/tomcat-users.xml"
+  notify: restart tomcat
+
+- name: Symlink Tomcat to current version
+  file:
+    src: "{{tomcat_archive_install_path}}"
+    dest: "{{tomcat_install_link}}"
+    state: link
+  notify: restart tomcat
+
+- name: Create systemd service script for Tomcat
+  template:
+    src: "templates/tomcat.service"
+    dest: "/etc/systemd/system/tomcat.service"
+  notify: restart tomcat
+
+- name: Start and enable Tomcat service
+  systemd:
+    name: tomcat
+    state: started
+    enabled: true
+    daemon_reload: true

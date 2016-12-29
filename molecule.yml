@@ -1,0 +1,22 @@
+---
+dependency:
+  name: galaxy
+driver:
+  name: docker
+docker:
+  containers:
+    - name: flxpeters.tomcat8
+      image: geerlingguy/docker-ubuntu1604-ansible
+      image_version: latest
+      privileged: True
+      volume_mounts:
+        - '/sys/fs/cgroup:/sys/fs/cgroup:ro'
+      command: '/lib/systemd/systemd'
+      ansible_groups:
+        - group1
+verifier:
+  name: testinfra
+
+dependency:
+  name: galaxy
+  requirements_file: requirements.yml
