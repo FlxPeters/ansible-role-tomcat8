@@ -28,7 +28,7 @@ Including an example of how to use your role (for instance, with variables passe
 
     - hosts: servers
       roles:
-         - { role: flxpeters.tomcat8, tomcat_java_home: /path/to/java/jre }
+         - { role: FlxPeters.tomcat8, tomcat_java_home: /path/to/java/jre }
 
 Test
 ----
