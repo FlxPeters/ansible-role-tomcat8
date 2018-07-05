@@ -9,17 +9,22 @@ Requirements
 ------------
 
 This role depends on existing Java installation. The java installation is not part of this role.
-You must define the JAVA_HOME in the `tomcat_java_home` variable. 
+You must define the JAVA_HOME in the `tomcat_java_home` variable.
 
 Role Variables
 --------------
 
-`tomcat_java_home` The path to your java installation. This variable is required in the systemd service file. 
+`tomcat_java_home` The path to your java installation. This variable is required in the systemd service file.
 
 Dependencies
 ------------
 
 A running Java installation like open-jdk-8.
+
+Installation of the Role
+----------------
+
+`ansible-galaxy install FlxPeter.tomcat8`
 
 Example Playbook
 ----------------
@@ -29,6 +34,8 @@ Including an example of how to use your role (for instance, with variables passe
     - hosts: servers
       roles:
          - { role: FlxPeters.tomcat8, tomcat_java_home: /path/to/java/jre }
+
+For assistance on getting location of java_home from your server check stackoverflow answer [here](https://stackoverflow.com/a/23427862/5128251)
 
 Test
 ----
