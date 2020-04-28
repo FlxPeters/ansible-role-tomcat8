@@ -1,10 +1,14 @@
 ---
 - hosts: all
+  remote_user: ubuntu
   vars:
-    java_packages:
-      - openjdk-8-jdk
-    tomcat_java_home: "/usr/lib/jvm/java-1.8.0-openjdk-amd64/jre"
+    java_version: 'jdk-11.0.5+10'
+    java_install_dir: '/opt/java'
+    tomcat_java_home: "/opt/java/jdk-11.0.5/"
+    #tomcat_archive_name: "apache-tomcat-9.0.34"
+    #tomcat_use_local_archive: true
+    #tomcat_redis_filename: apache-tomcat-9.0.34.tar.gz
 
   roles:
-    - geerlingguy.java
-    - role: ansible-role-tomcat8
+    - gantsign.java
+    - {role: ansible-role-tomcat}

@@ -1,2 +1,5 @@
 .molecule
 .idea
+files/
+hosts
+.project

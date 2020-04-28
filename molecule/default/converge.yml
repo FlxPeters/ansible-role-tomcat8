@@ -1,0 +1,19 @@
+---
+- name: Converge
+  hosts: all
+  become: true
+
+  vars:
+    java_version: 'jdk-11.0.5+10'
+    java_install_dir: '/opt/java'
+    tomcat_java_home: "/opt/java/jdk-11.0.5/"
+
+  pre_tasks:
+    - name: Update apt cache.
+      apt: update_cache=yes cache_valid_time=600
+      when: ansible_os_family == 'Debian'
+      changed_when: false
+
+  roles:
+    - gantsign.java
+    - role: pulse-mind.tomcat

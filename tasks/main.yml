@@ -5,31 +5,58 @@
   when: tomcat_java_home is not defined
 
 - name: Create tomcat group
+  become: yes
   group:
     name: tomcat
     system: true
 
 - name: Create tomcat user
+  become: yes
   user:
     name: tomcat
     group: tomcat
     shell: /bin/false
-    home: "{{tomcat_home_path}}"
+    home: "{{ tomcat_home_path }}"
     system: true
     createhome: true
     move_home: true
 
+- name: copy local tomcat
+  include_tasks: copy-local-tomcat.yml
+  when:
+    - tomcat_use_local_archive
+    - tomcat_redis_filename not in (None, '', omit)
+
+- name: Check for tomcat on remote box
+  stat:
+    path: '{{ tomcat_download_dir }}/{{ tomcat_redis_filename }}'
+  register: remote_tomcat_file
+  ignore_errors: yes
+
 - name: Download and extract Tomcat to tomcat home directory
+  become: yes
   unarchive:
-    src: "{{tomcat_archive_url}}/{{tomcat_archive_name}}{{tomcat_archive_name_ext}}"
-    dest: "{{tomcat_home_path}}"
+    src: "{{ tomcat_archive_url }}/{{ tomcat_archive_name }}{{ tomcat_archive_name_ext }}"
+    dest: "{{ tomcat_home_path }}"
     remote_src: true
     group: tomcat
-    creates: "{{tomcat_archive_install_path}}"
+    creates: "{{ tomcat_archive_install_path }}"
+  when: not remote_tomcat_file.stat.exists
+
+- name: Extract local Tomcat to tomcat home directory
+  become: yes
+  unarchive:
+    src: "{{ tomcat_download_dir }}/{{ tomcat_redis_filename }}"
+    dest: "{{ tomcat_home_path }}"
+    remote_src: true
+    group: tomcat
+    creates: "{{ tomcat_archive_install_path }}"
+  when: remote_tomcat_file.stat.exists
 
 - name: Make the tomcat user the owner of the webapps, work, temp, and logs directories
+  become: yes
   file:
-    path: "{{tomcat_archive_install_path}}/{{item}}"
+    path: "{{ tomcat_archive_install_path }}/{{ item }}"
     owner: tomcat
     group: tomcat
     recurse: true
@@ -40,38 +67,44 @@
     - logs
 
 - name: Grant Tomcat group read access to the conf directory
+  become: yes
   file:
-    path: "{{tomcat_archive_install_path}}/conf"
+    path: "{{ tomcat_archive_install_path }}/conf"
     state: directory
     mode: "g+r"
     recurse: true
 
 - name: Grant Tomcat group execute access to the conf directory itself
+  become: yes
   file:
-    path: "{{tomcat_archive_install_path}}/conf"
+    path: "{{ tomcat_archive_install_path }}/conf"
     state: directory
     mode: "g+x"
 
 - name: Create tomcat-users.xml
+  become: yes
   template:
     src: templates/tomcat-users.xml
-    dest: "{{tomcat_archive_install_path}}/conf/tomcat-users.xml"
+    dest: "{{ tomcat_archive_install_path }}/conf/tomcat-users.xml"
   notify: restart tomcat
 
 - name: Symlink Tomcat to current version
+  become: yes
   file:
-    src: "{{tomcat_archive_install_path}}"
-    dest: "{{tomcat_install_link}}"
+    src: "{{ tomcat_archive_install_path }}"
+    dest: "{{ tomcat_install_link }}"
     state: link
   notify: restart tomcat
 
 - name: Create systemd service script for Tomcat
+  become: yes
   template:
     src: "templates/tomcat.service"
     dest: "/etc/systemd/system/tomcat.service"
   notify: restart tomcat
 
 - name: Start and enable Tomcat service
+  become: yes
   systemd:
     name: tomcat
     state: started

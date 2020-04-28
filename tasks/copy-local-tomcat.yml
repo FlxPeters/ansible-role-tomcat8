@@ -1,0 +1,24 @@
+---
+- name: check for Tomcat on local box
+  stat:
+    path: '{{ tomcat_local_archive_dir }}/{{ tomcat_redis_filename }}'
+  delegate_to: localhost
+  register: tomcat_local_file
+  ignore_errors: yes
+  become: no
+  when: tomcat_use_local_archive
+
+- name: create download directory
+  file:
+    state: directory
+    mode: 'u=rwx,go=rx'
+    dest: '{{ tomcat_download_dir }}'
+  when: tomcat_use_local_archive
+
+- name: copy Tomcat from local box
+  become: yes
+  copy:
+    src: '{{ tomcat_local_archive_dir }}/{{ tomcat_redis_filename }}'
+    dest: '{{ tomcat_download_dir }}/{{ tomcat_redis_filename }}'
+    mode: 'u=rw,go=r'
+  when: tomcat_use_local_archive and tomcat_local_file.stat.exists

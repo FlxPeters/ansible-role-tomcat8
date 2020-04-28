@@ -1,14 +1,29 @@
 ---
-sudo: required
 language: python
-services:
-  - docker
-before_install:
-  - sudo apt-get -qq update
-  - sudo apt-get install -o Dpkg::Options::="--force-confold" --force-yes -y docker-engine
+services: docker
+
+env:
+  global:
+    - ROLE_NAME: tomcat
+  matrix:
+    #- MOLECULE_DISTRO: centos7
+    #- MOLECULE_DISTRO: centos6
+    - MOLECULE_DISTRO: ubuntu1804
+    #- MOLECULE_DISTRO: ubuntu1604
+    # - MOLECULE_DISTRO: debian9
+
 install:
-  - pip install molecule docker-py
+  # Install test dependencies.
+  - pip install molecule yamllint ansible-lint docker
+
+before_script:
+  # Use actual Ansible Galaxy role name for the project directory.
+  - cd ../
+  - mv ansible-role-$ROLE_NAME pulse-mind.$ROLE_NAME
+  - cd pulse-mind.$ROLE_NAME
+
 script:
+  # Run tests.
   - molecule test
 
 notifications:

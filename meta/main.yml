@@ -1,19 +1,21 @@
+---
 galaxy_info:
-  author: Felix Peters
-  description: Install Tomcat 8 on Ubuntu >= 16.04 with systemd
+  author: Pulse-Mind
+  description: Install Tomcat on Ubuntu >= 16.04 with systemd
 
   license: MIT / BSD
 
-  min_ansible_version: 1.8
+  min_ansible_version: 2.4
 
   platforms:
     - name: Ubuntu
       versions:
-      - xenial
-      - yakkety
+        - xenial
+        - yakkety
 
   galaxy_tags:
     - tomcat
     - tomcat8
+    - tomcat9
 
 dependencies: []
